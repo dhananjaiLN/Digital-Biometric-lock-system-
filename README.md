@@ -1,6 +1,7 @@
-🔒 DigitDigital Biometric Lock System (8051)
+<img width="815" height="533" alt="image" src="https://github.com/user-attachments/assets/603630a1-ad9e-4b6d-b927-91b095f565e9" />🔒 DigitDigital Biometric Lock System (8051)
 A multi-layer secure access control system built on the AT89C51 (8051) microcontroller, combining fingerprint, keypad password, RFID, and a hidden secret PIN. It drives a DC motor to simulate a door/gate, shows real-time status on an I²C 16x2 LCD, and triggers a buzzer on unauthorized attempts.
 
+---
 Features
 
 🔐 Fingerprint authentication as the primary access method
@@ -17,6 +18,7 @@ Features
 
 ⚙️ DC motor control for gate/door simulation
 
+---
 Authentication Flow
 
 Step 1 — Fingerprint: Place finger on sensor. If valid, proceed to Password.
@@ -27,6 +29,7 @@ Step 3 — RFID Fallback: After three wrong passwords, scan RFID. The system com
 
 Step 4 — Secret PIN Backup: If RFID is skipped/unavailable, enter secret PIN *2468. Correct PIN grants access; invalid triggers the buzzer.
 
+---
 Hardware
 AT89C51 microcontroller (8051 family)
 
@@ -42,6 +45,7 @@ Buzzer connected to P2.0
 
 DC motor + driver circuit (gate/door simulation)
 
+---
 Software Stack
 Language: Embedded C
 
@@ -57,6 +61,7 @@ UART routines (RFID communication)
 
 I²C routines (LCD interface)
 
+---
 Key Functions
 wait_for_fingerprint() → Blocks until a valid touch is detected
 
@@ -76,6 +81,7 @@ activate_buzzer() → Alerts on invalid attempts or access denial
 
 lcd_cmd(), lcd_data(), lcd_string() → I²C LCD control utilities
 
+---
 Example Workflow
 Power ON → LCD: “Enter Fingerprint”
 
@@ -101,3 +107,6 @@ Else → Buzzer ringsal Biometric Lock System (8051 Microcontroller)
 
 Developed by Dhananjai
 📌 Secure Access Control System with Multi-Level Authentication
+
+---
+
