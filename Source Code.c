@@ -10,18 +10,16 @@ sbit KEYPAD_ROW4 = P1^3;
 sbit KEYPAD_COL1 = P1^4;
 sbit KEYPAD_COL2 = P1^5;
 sbit KEYPAD_COL3 = P1^6;
-sbit MOTOR_IN1 = P3^3;  // Motor control pin 1
-sbit MOTOR_IN2 = P3^1;  // Motor control pin 2
-sbit MOTOR_EN  = P3^2;  // Motor enable pin
 sbit FINGERPRINT_SENSOR = P0^0; // Finger Print
 sbit scl=P0^6; // I2C SCL
 sbit sda=P0^7; // I2C SDA
+sbit servo = P3^3; // Servo Signal Pin
 
 // Password & RFID Storage
-unsigned char password[5] = "1234*";
+unsigned char password[6] = "*1234*";
 unsigned char secret[6];
 unsigned char stored_RFID[12] = "53000C21156B";
-unsigned char input_pass[5];
+unsigned char input_pass[6];
 unsigned char input_RFID[13];
 unsigned char attempts = 3;
 unsigned char slave1=0x4E;
@@ -51,6 +49,10 @@ char scan_keypad(void);
 void wait_for_fingerprint(void);
 void ask_for_RFID(void);
 void ask_for_SecretPIN(void);
+void msdelay(unsigned int);
+void servo_pulse(unsigned int);
+void servo_open(void);
+void servo_close(void);
 
 void main(void) {
     init_Sys();
@@ -71,16 +73,11 @@ void main(void) {
                 lcd_string("OPENING GATE !");
 								delay_Long();
 								delay_Long();
-							  /*MOTOR_EN = 1;   // Enable motor driver
-								MOTOR_IN1 = 1;  // Set motor direction
-								MOTOR_IN2 = 0;
-								delay_Long();
-								MOTOR_EN = 0;   
-								MOTOR_IN1 = 0;  
-								MOTOR_IN2 = 0;*/
+							  servo_open();
 								lcd_cmd(0x01);  // Clear screen
 								lcd_string("Thank You !");
 								delay_Long();delay_Long();
+								servo_close();
                 return;
             }
             attempts--;
@@ -267,8 +264,11 @@ for(n;n>0;n--)
 // Read 5-digit password from keypad without masking
 void get_password() {
     unsigned char i;
+		unsigned char first_key;
     lcd_cmd(0xC0); // Move cursor to the second line
-    for (i = 0; i < 5; i++) {
+		first_key = scan_keypad();
+		input_pass[0]=first_key;
+    for (i = 1; i < 6; i++) {
         input_pass[i] = scan_keypad();
         lcd_data(input_pass[i]); // Display the entered digit
 				delay_ms(10);
@@ -278,7 +278,7 @@ void get_password() {
 // Compare entered password with stored password
 bit check_password() {
     unsigned char i;
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 6; i++) {
         if (input_pass[i] != password[i]) return 0;
     }
     return 1;
@@ -311,23 +311,16 @@ void ask_for_RFID() {
             lcd_cmd(0x01);
             lcd_string("OPENING GATE!");
             delay_Long(); delay_Long();
-
-            // Uncomment below if you control motor
-            /*
-            MOTOR_EN = 1;
-            MOTOR_IN1 = 1;
-            MOTOR_IN2 = 0;
-            delay_Long();
-            MOTOR_EN = 0;*/
+						servo_open();
 
             lcd_cmd(0x01);
             lcd_string("Thank You!");
             delay_Long(); delay_Long();
+						servo_close();
             return;
         } else {
             lcd_cmd(0x01);
             lcd_string("Invalid Tag");
-            activate_buzzer();
         }
     }
 }
@@ -352,11 +345,6 @@ bit check_RFID() {
 		else return 0;
 }
 
-// Activate buzzer on incorrect RFID
-void activate_buzzer() {
-    BUZZER = 1;
-}
-
 //Secret Pin
 void ask_for_SecretPIN() {
     unsigned char i;
@@ -379,24 +367,17 @@ void ask_for_SecretPIN() {
         lcd_string("OPENING GATE!");
         delay_Long(); delay_Long();
 
-        // Uncomment motor control if needed
-        /*
-        MOTOR_EN = 1;
-        MOTOR_IN1 = 1;
-        MOTOR_IN2 = 0;
-        delay_Long();
-        MOTOR_EN = 0;*/
-
+				servo_open();
         lcd_cmd(0x01);
         lcd_string("Thank You!");
         delay_Long(); delay_Long();
+				servo_close();
+				return;
     } else {
         lcd_cmd(0x01);
         lcd_string("Invalid PIN");
-        activate_buzzer();
     }
 }
-
 
 char scan_keypad() {
     while (1) {
@@ -420,4 +401,36 @@ char scan_keypad() {
         if (KEYPAD_COL2 == 0) { delay_Short(); while (KEYPAD_COL2 == 0); return '0'; }
         if (KEYPAD_COL3 == 0) { delay_Short(); while (KEYPAD_COL3 == 0); return '#'; }
     }
+}
+
+//Servo
+void msdelay(unsigned int time) {
+    unsigned int i, j;
+    for (i = 0; i < time; i++)
+        for (j = 0; j < 112; j++); // Approx 1ms delay at 11.0592 MHz
+}
+
+void servo_pulse(unsigned int time_high) {
+    servo = 1;
+    {
+        unsigned char i;
+        for(i=0; i<time_high; i++);
+    }
+    servo = 0;
+}
+
+void servo_open(void){
+	unsigned char i;
+	for (i = 0; i < 50; i++) { // Repeat for 1 second (50*20ms)
+		servo_pulse(200); // High-precision 1.5ms pulse
+		msdelay(18); // 20ms period - 1.5ms - few us = ~18ms
+  }
+}
+
+void servo_close(void){
+	unsigned char i;
+	for (i = 0; i < 50; i++) {
+		servo_pulse(100); // High-precision 1.0ms pulse
+		msdelay(19); // 20ms period - 1.0ms - few us = ~19ms
+  }
 }
