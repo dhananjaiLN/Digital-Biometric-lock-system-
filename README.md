@@ -16,7 +16,7 @@ Features
 
 🖥️ I²C LCD with user-friendly prompts
 
-⚙️ DC motor control for gate/door simulation
+⚙️ Servo motor control for gate/door simulation
 
 ---
 Authentication Flow
@@ -43,7 +43,7 @@ Fingerprint sensor (simulated via digital input)
 
 Buzzer connected to P2.0
 
-DC motor + driver circuit (gate/door simulation)
+Servo (gate/door simulation)
 
 ---
 Software Stack
